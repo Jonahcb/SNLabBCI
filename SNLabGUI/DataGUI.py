@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 import PCA
 from SNLabBCI import TiffProcessor as tp, Grapher as g
-import GUIHelper as ghelper
+from SNLabGUI import GUIHelper as ghelper
 
 # constants
 pixelps = 3.4 / 65536.0
@@ -185,11 +185,13 @@ while True:
     elif event == 'Plot       ':
         # determine how many charts to create for the dataset (only works for multiples of 10)
         num_charts = np.size(data, axis=0) // 10
+        print('plot button')
 
         # iterate through all trials
         for i in range(num_charts):
             # create trial index list for legend
             trials = list(range(((i * 10) + 1), ((i + 1) * 10) + 1))
+            print('right before function call')
             g.plot_single_trial(data[(i * 10):((i + 1) * 10)], trials, values=values)
 
     elif event == 'Plot By Channel':
@@ -217,13 +219,13 @@ while True:
 
     elif event == 'Photon Count':
         # process data
-        data = tp.photon_count(values["-TIFF_FOLDER_PATH-"],
+        data, upper_threshold, lower_threshold = tp.photon_count(values["-TIFF_FOLDER_PATH-"],
                           values[
                               "-METADATA_FOLDER_PATH-"])
 
 
         # plot data
-        #g.plot_data(data, 2, values=values)
+        g.plot_data(data[0], 2, values=values, upper_threshold=upper_threshold, lower_threshold=lower_threshold)
 
     elif event == 'PCA':
         # process data

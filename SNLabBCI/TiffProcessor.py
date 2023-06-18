@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from PIL import Image
-import MetadataReader as mr
+from SNLabBCI import MetadataReader as mr
 import matplotlib.pyplot as plt
 
 # constants
@@ -138,10 +138,11 @@ def tif_processor_run(tiff_dir, metadata_dir):
 
     x = np.array(temp)
 
-    # normalize over each channel
-    x_min, x_max = x.min(axis=1, keepdims=True), x.max(axis=1, keepdims=True)
+    # Calculate the mean along the (2nd, 3rd, 4th) axes (channels, frames, lines)
+    mean = np.mean(x, axis=(2, 3, 4), keepdims=True)
 
-    normalized_data = (x - x_min) / (x_max - x_min)
+    # Subtract the mean of each channel from the corresponding channel's data
+    normalized_data = x - mean
 
     return normalized_data
 
@@ -331,15 +332,19 @@ def photon_count(tiff_dir, metadata_dir):
     std = np.std(new_data, axis=2)
 
     # calculate threshold (3.8 std right now)
-    threshold = mean + 3.8 * std
+    upper_threshold = mean + 3.8 * std
+    lower_threshold = mean - 3.8 * std
 
-    # only keep data above the threshold
-    data = np.where(data > threshold[0][0], data, 0)
+    # only keep data above the upper threshold and below the lower threshold
+    data_above = np.sum(data > upper_threshold[..., np.newaxis, np.newaxis, np.newaxis], axis=-1)
+    data_below =np.sum(data < lower_threshold[..., np.newaxis, np.newaxis, np.newaxis], axis=-1)
 
-    # count the number of points above the threshold for each line
-    data = np.count_nonzero(data, axis=4)
+    # add together to form total count
+    data = data_above + data_below
 
-    # reshape
+
+    #data = data.reshape(np.size(data, axis=0), np.size(data, axis=1),
+                       #np.size(data, axis=2) * np.size(data, axis=3) * np.size(data, axis=4))
     data = data.reshape(np.size(data, axis=0), np.size(data, axis=1),
                         np.size(data, axis=2) * np.size(data, axis=3))
 
@@ -355,7 +360,8 @@ def photon_count(tiff_dir, metadata_dir):
         CH4 = moving_average(trial[3], 100)
         avg.append(np.array([CH1, CH2, CH3, CH4]))
 
-    return np.array(avg)
+    # return np.array(avg)
+    return np.array(avg), upper_threshold, lower_threshold
 
 
 def moving_average(x, w):

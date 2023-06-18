@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-import GrapherHelper as gh
+from SNLabBCI import GrapherHelper as gh
 from SNLabGUI import GUIHelper as ghelper
 
 # constants
@@ -108,7 +108,7 @@ def label_plot(type, axes=None, channel_num=None, files_names=None, trial_indice
         plt.suptitle(values["-GRAPH_TITLE-"] + '_std_by_channel')
 
 
-def plot_by_channel():
+def plot_by_channel(upper_threshold=None, lower_threshold=None):
     """
     Plots the selected data sets by grouping corresponding channels on same figure
     """
@@ -142,6 +142,8 @@ def plot_by_channel():
             # plot data
             plt.scatter(time_series, data[channel], label=channel, s=0.1,
                         color=channel_color[i])
+            plt.axhline(y=upper_threshold[0][channel], color=channel_color[channel], linestyle='-')
+            plt.axhline(y=lower_threshold[0][channel], color=channel_color[channel], linestyle='-')
 
         # create legend
         label_plot(type=3, channel_num=channel, files_names=file_names)
@@ -149,7 +151,7 @@ def plot_by_channel():
     plt.show(block=False)
 
 
-def plot_data(selected_sets, type, values=None):
+def plot_data(selected_sets, type, values=None, upper_threshold=None, lower_threshold=None):
     """
     Plots the selected data sets
 
@@ -204,8 +206,13 @@ def plot_data(selected_sets, type, values=None):
     elif type == 2:
         # plot each channel on subplot
         for c in range(num_channels):
+
             plt.scatter(time_series, selected_sets[c], label=c, s=0.1,
                         color=channel_color[c])
+
+            # plot threshold lines
+            #plt.axhline(y=upper_threshold[0][c], color=channel_color[c], linestyle='-')
+            #plt.axhline(y=lower_threshold[0][c], color=channel_color[c], linestyle='-')
 
         # label plots
         label_plot(type, values=values)
@@ -238,7 +245,7 @@ def plot_single_trial(selected_sets, trials, values):
     Parameter trials: a list of trial #s that were plotted
     Precondition: trials must be a list of ints
     """
-
+    print('grapher')
     # assign analysis type
     type = 4
 
@@ -259,8 +266,6 @@ def plot_single_trial(selected_sets, trials, values):
         # plot each trial on graph by iterating through dataset and list of colors to graph with
         for trial, color in zip(selected_sets, mcolors.TABLEAU_COLORS):
             # reshape array to plot as line graph
-            print(trial.shape)
-            #trial = trial.reshape(4, 5376)
 
             plt.plot(time_series, trial[c], label=c,
                      color=color)
@@ -371,4 +376,3 @@ def plot_std(average_data, std_data, values):
     gh.save_file(filepath=filepath, filename=file_name, figure=figure, subdir=subdir)
 
     plt.show(block=False)
-
