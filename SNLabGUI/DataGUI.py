@@ -225,7 +225,13 @@ while True:
 
 
         # plot data
-        g.plot_data(data[0], 2, values=values, upper_threshold=upper_threshold, lower_threshold=lower_threshold)
+        num_charts = np.size(data, axis=0) // 10
+
+        # iterate through all trials
+        for i in range(num_charts):
+            # create trial index list for legend
+            trials = list(range(((i * 10) + 1), ((i + 1) * 10) + 1))
+            g.plot_single_trial(data[(i * 10):((i + 1) * 10)], trials, values=values)
 
     elif event == 'PCA':
         # process data

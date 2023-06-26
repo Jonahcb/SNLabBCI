@@ -335,7 +335,7 @@ def photon_count(tiff_dir, metadata_dir):
     upper_threshold = mean + 3.8 * std
     lower_threshold = mean - 3.8 * std
 
-    # only keep data above the upper threshold and below the lower threshold
+    # only keep data above the upper threshold or below the lower threshold
     data_above = np.sum(data > upper_threshold[..., np.newaxis, np.newaxis, np.newaxis], axis=-1)
     data_below =np.sum(data < lower_threshold[..., np.newaxis, np.newaxis, np.newaxis], axis=-1)
 
